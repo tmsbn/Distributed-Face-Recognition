@@ -1,4 +1,5 @@
-from flask import Flask, request
+from flask import Flask, request, make_response
+
 from abstract_server import DDNNNode
 
 app = Flask(__name__)
@@ -17,16 +18,22 @@ def hello_world():
 
 @app.route('/user', methods=['POST'])
 def receive_message():
-    # if request.method == 'POST':
-    # handler = AbstractServer()
     reply = message_handler.handle_message(request.data)
-    # print(request.data)
-    return reply
+    return make_response(reply)
+
+
+@app.route('/img', methods=['POST'])
+def get_image():
+    file = request.files['media']
+    print('file', file)
+    response = message_handler.handle_image(file)
+    return response
 
 
 def main():
     set_handler(DDNNNode())
     app.run()
+
 
 if __name__ == '__main__':
     main()
