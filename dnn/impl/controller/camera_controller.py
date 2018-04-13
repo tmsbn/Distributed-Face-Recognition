@@ -1,10 +1,10 @@
 import socket
 
-from PIL import Image
+from Pillow import Image
 
 import dnn.demo.messages as msg
 from dnn.const.net import PATH_TO_IMAGES
-from dnn.impl.net.Requests_Sender import add_camera
+from dnn.impl.net.Requests_Sender import add_camera, upload_image
 
 HOSTNAME = socket.gethostbyname(socket.gethostname())
 PORT = '5000'
@@ -29,24 +29,25 @@ class CameraNode:
             take_and_send_image()
         return '{"message": "taking image"}'
 
-    # def handle_image(self, image_file):
-    #     image = Image.open(image_file)
-    #     save(image, self.save_path)
-    #     return '{"message": "got image"}'
+        # def handle_image(self, image_file):
+        #     image = Image.open(image_file)
+        #     save(image, self.save_path)
+        #     return '{"message": "got image"}'
 
 
 def take_and_send_image():
     print('You have been shot by a camera')
-    return Image.open(PATH_TO_IMAGES + 'elmur.jpg')  # replace attribute with image bits too.
+    upload_image(PATH_TO_IMAGES + 'elmur.jpg')  # The image file. Better to save and send than just send.
 
 
 def start_camera():
+    # take_and_send_image()
+    # return
     from dnn.impl.net.Flask_Receiver import app, set_handler
     set_handler(CameraNode())
 
-    add_camera(HOSTNAME)
+    # add_camera(HOSTNAME)
     app.run(host=HOSTNAME, port=PORT)
-
 
 
 start_camera()

@@ -1,4 +1,5 @@
 from flask import Flask, request, make_response
+import json
 
 app = Flask(__name__)
 message_handler = None
@@ -16,7 +17,7 @@ def hello_world():
 
 @app.route('/text', methods=['POST'])
 def receive_message():
-    reply = message_handler.handle_message(request.data)
+    reply = message_handler.handle_message(json.loads(request.data))
     print(request.data)
     return make_response(reply)
 

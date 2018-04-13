@@ -1,14 +1,13 @@
 import socket
 
-from PIL import Image
+from Pillow import Image
 
 import dnn.demo.messages as msg
 from dnn.const.net import PATH_TO_IMAGES
 from dnn.impl.net.Requests_Sender import pull_image_request
 
-HOSTNAME = '0.0.0.0'  # socket.gethostbyname(socket.gethostname())
+HOSTNAME = socket.gethostbyname(socket.gethostname())
 PORT = '5000'
-URL = 'http://' + HOSTNAME + PORT
 
 cameras = []
 
@@ -25,8 +24,9 @@ class EdgeNode:
         self.save_path = PATH_TO_IMAGES + 'request.png'
 
     def handle_message(self, message):
-        if message['type'] == msg.NEW:
+        if message['type'] == msg.NEW_CAMERA:
             cameras.append(message['ip'])
+            print('Added Camera:' + message['ip'])
         return '{"message": "got reply"}'
 
     def handle_image(self, image_file):
@@ -41,7 +41,6 @@ def pull_images():
 
 
 def start_edge():
-    print(URL)
     from dnn.impl.net.Flask_Receiver import app, set_handler
     set_handler(EdgeNode())
     app.run(host=HOSTNAME, port=PORT)
