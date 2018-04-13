@@ -1,7 +1,5 @@
 from flask import Flask, request, make_response
 
-from abstract_server import DDNNNode
-
 app = Flask(__name__)
 message_handler = None
 
@@ -16,9 +14,10 @@ def hello_world():
     return 'Hello, World!'
 
 
-@app.route('/user', methods=['POST'])
+@app.route('/text', methods=['POST'])
 def receive_message():
     reply = message_handler.handle_message(request.data)
+    print(request.data)
     return make_response(reply)
 
 
@@ -31,7 +30,7 @@ def get_image():
 
 
 def main():
-    set_handler(DDNNNode())
+    # set_handler(DDNNNode())
     app.run()
 
 
