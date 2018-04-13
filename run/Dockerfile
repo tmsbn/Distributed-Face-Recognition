@@ -6,4 +6,4 @@ WORKDIR /myapp
 RUN pip-3.3 install -r requirements.txt
 RUN pip-3.3 install .
 EXPOSE 5000
-CMD myapp --port 8000
+CMD python3 edge_controller.py
