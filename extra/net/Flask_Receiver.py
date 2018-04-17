@@ -1,13 +1,14 @@
-from flask import Flask, request, make_response
 import json
 
+import requests
+from flask import Flask, request, make_response
+
 app = Flask(__name__)
-message_handler = None
 
 
-def set_handler(handler):
-    global message_handler
-    message_handler = handler
+def echo_message(url, message):
+    response = requests.post(url, data=json.dumps(message))
+    print(json.loads(response.text))
 
 
 @app.route('/test')
@@ -17,7 +18,7 @@ def hello_world():
 
 @app.route('/text', methods=['POST'])
 def receive_message():
-    reply = message_handler.handle_message(json.loads(request.data))
+    reply = handle_message(json.loads(request.data))
     print(request.data)
     return make_response(reply)
 

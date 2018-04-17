@@ -1,29 +1,24 @@
 import json
-import socket
 
+import extra.net.url_builder as builder
 import requests
 
-
-from dnn.const.net import PATH_TO_IMAGES
-import dnn.impl.net.url_builder as builder
-from dnn.demo.messages import new_camera, pull_images
+from extra.const import PATH_TO_IMAGES
 
 
-def echo_message(url, message):
-    response = requests.post(url, data=json.dumps(message))
-    print(json.loads(response.text))
 
 
 def pull_image_request(ip):
     url = builder.build_text_url_from_ip(ip)
-    message = pull_images()
+    message = dict()
+    message['ip'] = ip
     response = requests.post(url, data=json.dumps(message))
     print(json.loads(response.text))
 
 
 def add_camera(ip):
     url = builder.build_edge_url()
-    message = new_camera(ip)
+    message = None  # new_camera(ip)
     response = requests.post(url, data=json.dumps(message))
     print(response)
 
@@ -45,6 +40,7 @@ def main():
 
     image_name = PATH_TO_IMAGES + 'elmur.jpg'
     upload_image(url + 'img', image_name)
+
 
 if __name__ == '__main__':
     main()

@@ -1,10 +1,10 @@
 import socket
 
-from Pillow import Image
-
 import dnn.demo.messages as msg
-from dnn.const.net import PATH_TO_IMAGES
-from dnn.impl.net.Requests_Sender import pull_image_request
+from PIL import Image
+
+from extra.const import PATH_TO_IMAGES
+from extra.net.Requests_Sender import pull_image_request
 
 HOSTNAME = socket.gethostbyname(socket.gethostname())
 PORT = '5000'
@@ -41,7 +41,7 @@ def pull_images():
 
 
 def start_edge():
-    from dnn.impl.net.Flask_Receiver import app, set_handler
+    from extra.net import app, set_handler
     set_handler(EdgeNode())
     app.run(host=HOSTNAME, port=PORT)
 
