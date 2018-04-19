@@ -32,13 +32,23 @@ def send(url, message):
 
 def send_online_node(live_id):
     message = {
-        'id': node_id,
-        'online_node': nodes[live_id]
+        'id': live_id,
+        'url': nodes[live_id]
     }
 
-    for url in nodes.values():
-        full_url = url + URLS['online']
+    for k, v in nodes.items():
+        full_url = v + URLS['online']
         send(full_url, message)
+
+#
+# #  function to send models.
+# # param: List[List]
+# def send_models(curr_id, models):
+#     message = {
+#         'models': models
+#     }
+#     full_url = nodes[curr_id] + URLS['models']
+#     send(full_url, message)
 
 
 @app.route('/alive', methods=['POST'])
