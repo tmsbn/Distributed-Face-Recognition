@@ -16,13 +16,12 @@ app = Flask(__name__)
 url_head = 'http://'
 
 URLS = {
-    'online': '/online'
+    'update_online': '/update_online'
 }
 
 PORT = 5000
 
 node_id = 0
-#  nodes = {'id':'ip'}
 nodes = dict()
 
 
@@ -32,29 +31,21 @@ def send(url, message):
     return response
 
 
-def send_online_node(live_id):
+def update_online_nodes():
+
     message = {
-        'id': live_id,
-        'url': nodes[live_id]
+        'nodes': nodes
     }
 
-    for k, v in nodes.items():
-        full_url = v + URLS['online']
+    for key, value in nodes.items():
+
+        full_url = value + URLS['update_online']
         send(full_url, message)
 
-#
-# #  function to send models.
-# # param: List[List]
-# def send_models(curr_id, models):
-#     message = {
-#         'models': models
-#     }
-#     full_url = nodes[curr_id] + URLS['models']
-#     send(full_url, message)
 
+@app.route('/register', methods=['POST'])
+def register():
 
-@app.route('/alive', methods=['POST'])
-def client_alive():
     alive_id = -1
     for i in range(NODE_COUNT):
         if i not in nodes:
@@ -62,11 +53,12 @@ def client_alive():
             break
 
     if alive_id != -1:
+
         ip = json.loads(request.data)['ip']
         nodes[alive_id] = url_head + ip + ':' + PORT
-        send_online_node(alive_id)
+        update_online_nodes()
 
-    message = {'id': alive_id, 'online_nodes': nodes}
+    message = {'id': alive_id}
     return json.dumps(message)
 
 
@@ -76,14 +68,13 @@ def test_message():
     return request.data
 
 
-#  CONTROLLER METHODS
-def add_new_person():
-    pass
-
-
 def start_server():
-    # nodes[node_id] = url_head + HOSTNAME + ':' + PORT
     app.run(host=HOSTNAME, port=5000, debug=True, use_reloader=False)
 
 
-start_server()
+def main():
+    start_server()
+
+
+if __name__ == '__main__':
+    main()
