@@ -1,5 +1,0 @@
-Flask
-Pillow
-requests
-opencv-python
-face_recognition
