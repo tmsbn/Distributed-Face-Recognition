@@ -29,6 +29,10 @@ def send(url, message):
     log(response)
     return json.loads(response.text)
 
+# Show camera
+def show_camera():
+    pass
+
 
 # Register Node on the server
 def register():
@@ -44,6 +48,9 @@ def register():
     else:
         node_id = response['id']
         print(node_id)
+        show_camera()
+
+
 
 
 @app.route('/update_online', methods=['POST'])
@@ -64,6 +71,8 @@ def update_nodes():
 def start_server():
     threading.Thread(target=app.run, args=(HOST_NAME, PORT)).start()
     # app.run(host=HOST_NAME, port=PORT, debug=True, use_reloader=False)
+
+def
 
 
 def main():
