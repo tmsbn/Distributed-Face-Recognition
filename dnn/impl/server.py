@@ -8,7 +8,7 @@ from dnn.impl.utils import log
 
 HOSTNAME = socket.gethostbyname(socket.gethostname())
 
-NODE_COUNT = 16
+NODE_COUNT = 32
 app = Flask(__name__)
 
 url_head = 'http://'
