@@ -72,9 +72,6 @@ def start_server():
     threading.Thread(target=app.run, args=(HOST_NAME, PORT)).start()
     # app.run(host=HOST_NAME, port=PORT, debug=True, use_reloader=False)
 
-def
-
-
 def main():
 
     start_server()
