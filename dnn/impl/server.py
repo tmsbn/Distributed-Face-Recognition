@@ -5,11 +5,12 @@ import requests
 from flask import Flask, request
 
 from dnn.impl.utils import log
+from dnn.impl.node import app
 
 HOSTNAME = socket.gethostbyname(socket.gethostname())
 
 NODE_COUNT = 16
-app = Flask(__name__)
+# app = Flask(__name__)
 
 url_head = 'http://'
 
