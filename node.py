@@ -4,6 +4,7 @@ import requests
 from flask import Flask, request
 from utils import log
 import threading
+import time
 
 
 SERVER_URL = 'http://172.17.0.2:5000'
@@ -53,7 +54,11 @@ def update_nodes():
     response = json.loads(request.data)
     nodes = response['nodes']
     print(nodes)
-    return None
+
+    message = {
+        'success': True
+    }
+    return json.dumps(message)
 
 
 def start_server():
@@ -64,8 +69,9 @@ def start_server():
 def main():
 
     start_server()
-    register()
 
+    time.sleep(0.5) # Wait till server starts before sending request
+    register()
 
 
 if __name__ == '__main__':

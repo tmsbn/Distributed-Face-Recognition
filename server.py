@@ -2,8 +2,10 @@ import json
 import socket
 
 import requests
-from flask import Flask, request
 
+import random
+from flask import Flask, request
+from requests import exceptions
 from utils import log
 import time
 
@@ -32,6 +34,19 @@ def send(url, message):
     return response
 
 
+# Generate random node id
+def get_new_node_id():
+
+    register_id = -1
+    exists = True
+    while exists:
+        register_id = random.randint(1, NODE_COUNT + 1)
+        if node_id not in nodes:
+            exists = False
+
+    return register_id
+
+
 def update_online_nodes():
 
     message = {
@@ -50,11 +65,7 @@ def update_online_nodes():
 def register():
 
     try:
-        register_id = -1
-        for i in range(NODE_COUNT):
-            if i not in nodes:
-                register_id = i
-                break
+        register_id = get_new_node_id()
 
         if register_id != -1:
 
@@ -62,7 +73,7 @@ def register():
             nodes[register_id] = url_head + ip + ':' + str(PORT)
             update_online_nodes()
 
-    except:
+    except ConnectionError:
         message = {'error': 'Could not send message'}
         return json.dumps(message)
 
