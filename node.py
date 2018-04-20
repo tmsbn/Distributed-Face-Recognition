@@ -5,6 +5,7 @@ from flask import Flask, request
 from utils import log
 import threading
 
+
 SERVER_URL = 'http://172.17.0.2:5000'
 
 HOST_NAME = socket.gethostbyname(socket.gethostname())
@@ -37,14 +38,21 @@ def register():
         'ip': HOST_NAME
     }
     response = send(SERVER_URL + URLS['register'], message)
+    if 'error' in response:
+        print(response['error'])
+    else:
+        node_id = response['id']
+        print(node_id)
 
-    nodes = response['online_nodes']
-    node_id = response['id']
-    return node_id
 
+@app.route('/update_online', methods=['POST'])
+def update_nodes():
 
-@app.route('/model', methods=['POST'])
-def send_model():
+    global nodes
+
+    response = json.loads(request.data)
+    nodes = response['nodes']
+    print(nodes)
     return None
 
 
@@ -56,9 +64,8 @@ def start_server():
 def main():
 
     start_server()
-    # response = send(SERVER_URL + '/test', "Hello World")
-    node_id = register()
-    print(node_id)
+    register()
+
 
 
 if __name__ == '__main__':

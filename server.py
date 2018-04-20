@@ -5,6 +5,7 @@ import requests
 from flask import Flask, request
 
 from utils import log
+import time
 
 HOSTNAME = socket.gethostbyname(socket.gethostname())
 
@@ -40,25 +41,32 @@ def update_online_nodes():
     for key, value in nodes.items():
 
         full_url = value + URLS['update_online']
+        log(str(key) + " " + full_url)
+        # time.sleep(0.5)
         send(full_url, message)
 
 
 @app.route('/register', methods=['POST'])
 def register():
 
-    alive_id = -1
-    for i in range(NODE_COUNT):
-        if i not in nodes:
-            alive_id = i
-            break
+    try:
+        register_id = -1
+        for i in range(NODE_COUNT):
+            if i not in nodes:
+                register_id = i
+                break
 
-    if alive_id != -1:
+        if register_id != -1:
 
-        ip = json.loads(request.data)['ip']
-        nodes[alive_id] = url_head + ip + ':' + PORT
-        update_online_nodes()
+            ip = json.loads(request.data)['ip']
+            nodes[register_id] = url_head + ip + ':' + str(PORT)
+            update_online_nodes()
 
-    message = {'id': alive_id}
+    except:
+        message = {'error': 'Could not send message'}
+        return json.dumps(message)
+
+    message = {'id': register_id}
     return json.dumps(message)
 
 
