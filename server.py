@@ -13,8 +13,9 @@ from os.path import join
 import glob
 import pickle
 import traceback
+import threading
 
-HOSTNAME = socket.gethostbyname(socket.gethostname())
+HOST_NAME = socket.gethostbyname(socket.gethostname())
 
 
 NODE_COUNT = 32
@@ -32,11 +33,39 @@ PORT = 5000
 node_id = 0
 nodes = dict()
 
+train_image_encodings = {}
+
 
 def send(url, message):
     response = requests.post(url, data=json.dumps(message))
     log(response)
     return response
+
+
+# Calculate hash of the face encoding
+def get_hash_value(face_encoding, threshold=0):
+
+    val = np.linalg.norm(face_encoding)
+    print('Original value', val)
+    hash_value = int(round((val - 1) * 100)) - threshold
+    return hash_value
+
+
+def train_models_in_system():
+
+    global train_image_encodings
+
+    train_images_dir = join("images", "train")
+    train_image_files = glob.glob(join(train_images_dir, "*.jpg"))
+
+    for train_image_file in train_image_files:
+        train_image = face_recognition.load_image_file(train_image_file)
+        train_image_encoding = face_recognition.face_encodings(train_image)
+        train_image_name = train_image_file.split("/")[-1].split(".")[0]
+
+        if len(train_image_encoding) > 0:
+            train_image_encodings[train_image_name] = train_image_encoding[0]
+            print(get_hash_value(train_image_encoding[0]))
 
 
 # Generate random node id
@@ -62,7 +91,6 @@ def update_online_nodes():
 
         full_url = value + URLS['update_online']
         log(str(key) + " " + full_url)
-        # time.sleep(0.5)
         send(full_url, message)
 
 
@@ -79,6 +107,7 @@ def register():
             update_online_nodes()
 
     except Exception as e:
+
         traceback.print_exc()
         message = {'error': 'Could not send'}
         return json.dumps(message)
@@ -94,10 +123,12 @@ def test_message():
 
 
 def start_server():
-    app.run(host=HOSTNAME, port=5000, debug=True, use_reloader=False)
+    threading.Thread(target=app.run, args=(HOST_NAME, PORT)).start()
+    time.sleep(0.5)
 
 
 def main():
+    train_models_in_system()
     start_server()
 
 

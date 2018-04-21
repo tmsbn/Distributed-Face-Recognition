@@ -92,14 +92,13 @@ def find_successor(input_id):
 
 def start_server():
     threading.Thread(target=app.run, args=(HOST_NAME, PORT)).start()
+    time.sleep(0.5)
     # app.run(host=HOST_NAME, port=PORT, debug=True, use_reloader=False)
 
 
 def main():
 
     start_server()
-
-    time.sleep(0.5) # Wait till server starts before sending request
     register()
 
 
