@@ -1,13 +1,18 @@
 import json
 import socket
-
 import requests
-
 import random
 from flask import Flask, request
-from requests import exceptions
 from utils import log
+from requests import exceptions
 import time
+import cv2
+import face_recognition
+import numpy as np
+from os.path import join
+import glob
+import pickle
+import traceback
 
 HOSTNAME = socket.gethostbyname(socket.gethostname())
 
@@ -68,13 +73,14 @@ def register():
         register_id = get_new_node_id()
 
         if register_id != -1:
-
-            ip = json.loads(request.data)['ip']
+            response = request.get_json(force=True)
+            ip = response['ip']
             nodes[register_id] = url_head + ip + ':' + str(PORT)
             update_online_nodes()
 
-    except ConnectionError:
-        message = {'error': 'Could not send message'}
+    except Exception as e:
+        traceback.print_exc()
+        message = {'error': 'Could not send'}
         return json.dumps(message)
 
     message = {'id': register_id}

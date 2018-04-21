@@ -5,6 +5,12 @@ from flask import Flask, request
 from utils import log
 import threading
 import time
+import cv2
+import face_recognition
+import numpy as np
+from os.path import join
+import glob
+import pickle
 
 
 SERVER_URL = 'http://172.17.0.2:5000'
@@ -57,7 +63,7 @@ def update_nodes():
 
     global nodes
 
-    response = json.loads(request.data)
+    response = request.get_json(force=True)
     nodes = response['nodes']
     print(nodes)
     # print(find_successor(10))

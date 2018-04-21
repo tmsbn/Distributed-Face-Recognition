@@ -1,8 +1,4 @@
+requests
 Flask
 Pillow
-requests
 opencv-python
-face_recognition
-numpy
-matplotlib
-dlib
