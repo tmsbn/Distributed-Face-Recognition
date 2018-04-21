@@ -3,7 +3,7 @@ import socket
 import requests
 import random
 from flask import Flask, request
-from utils import log
+from utils import log, find_successor, get_hash_value, send_as_json, send_as_bytes
 from requests import exceptions
 import time
 import cv2
@@ -14,6 +14,7 @@ import glob
 import pickle
 import traceback
 import threading
+from collections import defaultdict
 
 HOST_NAME = socket.gethostbyname(socket.gethostname())
 
@@ -25,7 +26,8 @@ app = Flask(__name__)
 url_head = 'http://'
 
 URLS = {
-    'update_online': '/update_online'
+    'update_online': '/update_online',
+    'update_encodings': '/update_encodings'
 }
 
 PORT = 5000
@@ -36,21 +38,7 @@ nodes = dict()
 train_image_encodings = {}
 
 
-def send(url, message):
-    response = requests.post(url, data=json.dumps(message))
-    log(response)
-    return response
-
-
-# Calculate hash of the face encoding
-def get_hash_value(face_encoding, threshold=0):
-
-    val = np.linalg.norm(face_encoding)
-    print('Original value', val)
-    hash_value = int(round((val - 1) * 100)) - threshold
-    return hash_value
-
-
+# Calculate the face encodings of images and store in server
 def train_models_in_system():
 
     global train_image_encodings
@@ -64,8 +52,19 @@ def train_models_in_system():
         train_image_name = train_image_file.split("/")[-1].split(".")[0]
 
         if len(train_image_encoding) > 0:
-            train_image_encodings[train_image_name] = train_image_encoding[0]
-            print(get_hash_value(train_image_encoding[0]))
+            train_image_encodings[train_image_name] = train_image_encoding[0].tolist()
+
+    for name, face_encoding in train_image_encodings.items():
+        print(name, get_hash_value(face_encoding))
+
+
+def send_encodings_to_node(node_id):
+    message = {
+        'encodings': train_image_encodings
+    }
+
+    url = nodes[node_id] + URLS['update_encodings']
+    send_as_json(url, message)
 
 
 # Generate random node id
@@ -91,7 +90,7 @@ def update_online_nodes():
 
         full_url = value + URLS['update_online']
         log(str(key) + " " + full_url)
-        send(full_url, message)
+        send_as_json(full_url, message)
 
 
 @app.route('/register', methods=['POST'])
@@ -105,6 +104,9 @@ def register():
             ip = response['ip']
             nodes[register_id] = url_head + ip + ':' + str(PORT)
             update_online_nodes()
+
+        if len(nodes) == 1:
+            send_encodings_to_node(register_id)
 
     except Exception as e:
 
