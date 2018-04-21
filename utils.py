@@ -39,7 +39,7 @@ def print_online_nodes(nodes):
 # Calculate hash of the face encoding
 def get_hash_value(face_encoding, threshold=0):
 	val = np.linalg.norm(face_encoding)
-	print('Original value', val)
+	# print('Original value', val)
 	hash_value = int(round((val - 1) * 100)) - threshold
 	return hash_value
 
@@ -50,7 +50,6 @@ def find_successor(input_id, nodes):
 
 	node_ids = [int(x) for x in nodes.keys()]
 	node_ids.sort()
-	print('keys', node_ids)
 
 	for curr_id in node_ids:
 
@@ -60,6 +59,14 @@ def find_successor(input_id, nodes):
 
 
 def print_encoding_hash_values(encodings):
-
-	for name, encoding in encodings:
+	for name, encoding in encodings.items():
 		log(get_hash_value(encoding))
+
+
+# Helper function since keys in  nodes_json are stored as Strings
+def get_nodes_from_json_dict(nodes_json):
+	nodes = {}
+	for key, value in nodes_json.items():
+		nodes[int(key)] = value
+
+	return nodes

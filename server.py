@@ -46,6 +46,8 @@ def train_models_in_system():
     train_images_dir = join("images", "train")
     train_image_files = glob.glob(join(train_images_dir, "*.jpg"))
 
+    log('Loading images from server')
+
     for train_image_file in train_image_files:
         train_image = face_recognition.load_image_file(train_image_file)
         train_image_encoding = face_recognition.face_encodings(train_image)
@@ -55,8 +57,7 @@ def train_models_in_system():
             train_image_encodings[train_image_name] = train_image_encoding[0].tolist()
 
     for name, face_encoding in train_image_encodings.items():
-        print(name, get_hash_value(face_encoding))
-
+        log(name + ":" + str(get_hash_value(face_encoding)))
 
 
 def send_encodings_to_node(node_id):
@@ -87,6 +88,7 @@ def update_online_nodes():
         'nodes': nodes
     }
 
+    log('Node List')
     for key, value in nodes.items():
 
         full_url = value + URLS['update_online']

@@ -2,7 +2,7 @@ import json
 import socket
 import requests
 from flask import Flask, request
-from utils import log, find_successor, get_hash_value, send_as_json, is_in_range, print_encoding_hash_values
+from utils import log, find_successor, get_hash_value, send_as_json, is_in_range, print_encoding_hash_values, get_nodes_from_json_dict
 import threading
 import time
 import cv2
@@ -50,7 +50,7 @@ def register():
 		print(response['error'])
 	else:
 		node_id = response['id']
-		print(node_id)
+		log('Assigned node ID:' + str(node_id))
 		show_camera()
 		get_encodings_from_successor()
 
@@ -60,10 +60,11 @@ def register():
 def update_encodings():
 	global nodes, face_encodings
 
+	log('Updated Encodings from Server')
 	response = request.get_json(force=True)
 	face_encodings = response['encodings']
 	for name, face_encoding in face_encodings.items():
-		print(name, get_hash_value(np.asarray(face_encoding)))
+		log(name + ':' + str(get_hash_value(np.asarray(face_encoding))))
 
 	message = {
 		'success': True
@@ -72,27 +73,28 @@ def update_encodings():
 
 
 # Send encodings to predecessor
-@app.route('/update_encodings', methods=['POST'])
+@app.route('/successor_encodings', methods=['POST'])
 def successor_encodings():
 
 	response = request.get_json(force=True)
-	predecessor_node_id = response['node_id']
+	predecessor_node_id = int(response['node_id'])
 	encodings_to_transfer = {}
 
-	for name, face_encoding in face_encodings:
+	log('Transferring encodings to {}'.format(predecessor_node_id))
+	for name, face_encoding in face_encodings.items():
 		hash_value = get_hash_value(np.asarray(face_encoding))
-
+		log(hash_value)
 		# 4 5 8 [10] , [7]
 		if is_in_range(node_id, predecessor_node_id, hash_value):
 			encodings_to_transfer[name] = face_encoding
-			face_encodings.pop(name, None)
+			# face_encodings.pop(name, None)
 
 	message = {
 		'encodings': encodings_to_transfer
 	}
 
-	log('Encodings being transferred from {} to {}:'.format(node_id, predecessor_node_id))
-	print_encoding_hash_values(encodings_to_transfer)
+	log('Encodings of length {} being transferred from {} to {}:'.format(len(encodings_to_transfer), node_id, predecessor_node_id))
+	# print_encoding_hash_values(encodings_to_transfer)
 
 	return json.dumps(message)
 
@@ -100,7 +102,7 @@ def successor_encodings():
 # Get encoding from successor
 def get_encodings_from_successor():
 
-	global face_encodings
+	global face_encodings, node_id
 
 	if len(nodes) == 0:
 		log('No Nodes Yet')
@@ -108,9 +110,9 @@ def get_encodings_from_successor():
 	else:
 		print(nodes.keys())
 
-	successor_id = str(find_successor(node_id, nodes))
+	successor_id = find_successor(node_id, nodes)
 
-	if int(successor_id) == node_id:
+	if successor_id == node_id:
 		return
 
 	url = nodes[successor_id] + URLS['successor_encodings']
@@ -124,7 +126,7 @@ def get_encodings_from_successor():
 
 	log('Encodings after updating:')
 	print_encoding_hash_values(face_encodings)
-	log("Updated encodings " + str(face_encodings.keys()))
+	log("Updated encodings for:" + str(face_encodings.keys()))
 
 
 # Update the list of online nodes
@@ -133,13 +135,9 @@ def update_nodes():
 	global nodes, has_registered
 
 	response = request.get_json(force=True)
-	nodes = response['nodes']
+	nodes_json = response['nodes']
+	nodes = get_nodes_from_json_dict(nodes_json)
 	log('updating nodes to:' + str(nodes))
-
-	# # Get the encodings from successor after the node has registered
-	# if not has_registered:
-	#
-	# 	has_registered = True
 
 	message = {
 		'success': True
