@@ -58,6 +58,7 @@ def train_models_in_system():
         print(name, get_hash_value(face_encoding))
 
 
+
 def send_encodings_to_node(node_id):
     message = {
         'encodings': train_image_encodings

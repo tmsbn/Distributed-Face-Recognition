@@ -2,7 +2,7 @@ import json
 import socket
 import requests
 from flask import Flask, request
-from utils import log, find_successor, get_hash_value, send_as_json
+from utils import log, find_successor, get_hash_value, send_as_json, is_in_range, print_encoding_hash_values
 import threading
 import time
 import cv2
@@ -20,14 +20,17 @@ URLS = {
 	'register': '/register',
 	'models': '/models',
 	'model': '/model',
-	'test': '/test'
+	'test': '/test',
+	'successor_encodings': '/successor_encodings'
 }
 
 node_id = -1
-nodes = dict()
+nodes = dict()  # Key as node id and value as ip address
 face_encodings = dict()
 
 app = Flask(__name__)
+
+has_registered = False
 
 
 # Show camera
@@ -49,6 +52,7 @@ def register():
 		node_id = response['id']
 		print(node_id)
 		show_camera()
+		get_encodings_from_successor()
 
 
 # Update face encodings
@@ -67,15 +71,75 @@ def update_encodings():
 	return json.dumps(message)
 
 
+# Send encodings to predecessor
+@app.route('/update_encodings', methods=['POST'])
+def successor_encodings():
+
+	response = request.get_json(force=True)
+	predecessor_node_id = response['node_id']
+	encodings_to_transfer = {}
+
+	for name, face_encoding in face_encodings:
+		hash_value = get_hash_value(np.asarray(face_encoding))
+
+		# 4 5 8 [10] , [7]
+		if is_in_range(node_id, predecessor_node_id, hash_value):
+			encodings_to_transfer[name] = face_encoding
+			face_encodings.pop(name, None)
+
+	message = {
+		'encodings': encodings_to_transfer
+	}
+
+	log('Encodings being transferred from {} to {}:'.format(node_id, predecessor_node_id))
+	print_encoding_hash_values(encodings_to_transfer)
+
+	return json.dumps(message)
+
+
+# Get encoding from successor
+def get_encodings_from_successor():
+
+	global face_encodings
+
+	if len(nodes) == 0:
+		log('No Nodes Yet')
+		return
+	else:
+		print(nodes.keys())
+
+	successor_id = str(find_successor(node_id, nodes))
+
+	if int(successor_id) == node_id:
+		return
+
+	url = nodes[successor_id] + URLS['successor_encodings']
+
+	message = {
+		'node_id': node_id
+	}
+
+	response = send_as_json(url, message)
+	face_encodings = response['encodings']
+
+	log('Encodings after updating:')
+	print_encoding_hash_values(face_encodings)
+	log("Updated encodings " + str(face_encodings.keys()))
+
+
 # Update the list of online nodes
 @app.route('/update_online', methods=['POST'])
 def update_nodes():
-	global nodes
+	global nodes, has_registered
 
 	response = request.get_json(force=True)
 	nodes = response['nodes']
-	print(nodes)
-	# print(find_successor(10))
+	log('updating nodes to:' + str(nodes))
+
+	# # Get the encodings from successor after the node has registered
+	# if not has_registered:
+	#
+	# 	has_registered = True
 
 	message = {
 		'success': True

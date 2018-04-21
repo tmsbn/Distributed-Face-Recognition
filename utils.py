@@ -56,4 +56,10 @@ def find_successor(input_id, nodes):
 
 		if input_id < curr_id:
 			return curr_id
-	return nodes[0]
+	return node_ids[0]
+
+
+def print_encoding_hash_values(encodings):
+
+	for name, encoding in encodings:
+		log(get_hash_value(encoding))
