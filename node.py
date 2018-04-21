@@ -87,14 +87,12 @@ def successor_encodings():
 		# 4 5 8 [10] , [7]
 		if is_in_range(node_id, predecessor_node_id, hash_value):
 			encodings_to_transfer[name] = face_encoding
-			# face_encodings.pop(name, None)
 
 	message = {
 		'encodings': encodings_to_transfer
 	}
 
 	log('Encodings of length {} being transferred from {} to {}:'.format(len(encodings_to_transfer), node_id, predecessor_node_id))
-	# print_encoding_hash_values(encodings_to_transfer)
 
 	return json.dumps(message)
 

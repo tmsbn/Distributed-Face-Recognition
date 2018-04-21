@@ -32,7 +32,6 @@ URLS = {
 
 PORT = 5000
 
-node_id = 0
 nodes = dict()
 
 train_image_encodings = {}
@@ -76,7 +75,7 @@ def get_new_node_id():
     exists = True
     while exists:
         register_id = random.randint(1, NODE_COUNT + 1)
-        if node_id not in nodes:
+        if register_id not in nodes:
             exists = False
 
     return register_id
