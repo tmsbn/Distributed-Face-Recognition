@@ -124,8 +124,10 @@ def register():
 
 @app.route('/test', methods=['POST'])
 def test_message():
-    print(json.loads(request.data))
-    return request.data
+
+    response = request.get_json(force=True)
+    message = response['message']
+    return json.dump(message)
 
 
 def start_server():
