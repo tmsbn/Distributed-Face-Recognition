@@ -2,3 +2,4 @@ requests
 Flask
 Pillow
 opencv-python
+python-resize-image

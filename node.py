@@ -11,6 +11,7 @@ import numpy as np
 from os.path import join, exists
 import glob
 import pickle
+from resizeimage import resizeimage
 
 SERVER_URL = 'http://172.17.0.2:5000'
 
@@ -34,6 +35,9 @@ app = Flask(__name__)
 has_registered = False
 
 SENSITIVITY = 2
+
+IMAGE_WIDTH = 1000
+IMAGE_HEIGHT = 1000
 
 
 # Show camera
@@ -164,6 +168,31 @@ def update_nodes():
 	return json.dumps(message)
 
 
+# Search encoding in node
+def search_encoding_in_node(test_image_encoding):
+
+	hash_value = get_hash_value(test_image_encoding, 5)  # Add threshold
+	count = 0
+
+	while count < SENSITIVITY:
+		successor_node_id = find_successor(hash_value, nodes)
+
+		message = {
+			'encoding': test_image_encoding,
+			'count': count
+		}
+
+		url = nodes[successor_node_id] + URLS['search_image']
+		response = send_as_json(url, message)
+		if response['name'] == '':
+			hash_value = successor_node_id
+			count += 1
+		else:
+			return 'Welcome ' + response['name']
+
+	return 'Person not found'
+
+
 # Search for image , this function will be modified to fit in a camera
 def search_image_from_user():
 
@@ -172,38 +201,36 @@ def search_image_from_user():
 	image_path = join("images", 'test', image_name)
 	if exists(image_path):
 		test_image = face_recognition.load_image_file(image_path)
+		# test_image = resizeimage.resize_cover(test_image, [IMAGE_WIDTH, IMAGE_HEIGHT])
 		test_image_encoding = face_recognition.face_encodings(test_image)[0].tolist()
 
-		log(image_name, get_hash_value(test_image_encoding))
-
-		hash_value = get_hash_value(test_image_encoding)
-		count = 0
-
-		while count < SENSITIVITY:
-			successor_node_id = find_successor(hash_value, nodes)
-
-			message = {
-				'encoding':test_image_encoding,
-				'count': count
-			}
-
-			url = nodes[successor_node_id] + URLS['search_image']
-			response = send_as_json(url, message)
-			if response['name'] == '':
-				hash_value = successor_node_id
-				count += 1
-			else:
-				print('Welcome ' + response['name'])
-				break
+		result = search_encoding_in_node(test_image_encoding)
+		print(result)
 
 	else:
 		print('No such image found')
 
 
+@app.route('/test_encoding', methods=['POST'])
+def check_encoding():
+
+	request_json = request.get_json(force=True)
+	encoding = request_json['encoding']
+	search_result = search_encoding_in_node(encoding)
+	message = {
+		'result': search_result
+	}
+	return json.dump(message)
+
+
+@app.route('/')
+def hello_world():
+	return 'Dockerized'
+
+
 def start_server():
 	threading.Thread(target=app.run, args=(HOST_NAME, PORT)).start()
 	time.sleep(0.5)
-	# app.run(host=HOST_NAME, port=PORT, debug=True, use_reloader=False)
 
 
 def main():
