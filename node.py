@@ -33,6 +33,8 @@ app = Flask(__name__)
 
 has_registered = False
 
+SENSITIVITY = 2
+
 
 # Show camera
 def show_camera():
@@ -72,9 +74,10 @@ def search_image():
 	# See how far apart the test image is from the known faces
 	for name, face_encoding in face_encodings.items():
 		face_distances = face_recognition.face_distance([face_encoding], unknown_face_encoding)
-		log('face distance', face_distances)
+		log('face distance', face_distances, name)
 		if face_distances[0] <= 0.5:
 			message['name'] = name
+
 	return json.dumps(message)
 
 
@@ -128,8 +131,6 @@ def get_encodings_from_successor():
 	if len(nodes) == 0:
 		log('No Nodes Yet')
 		return
-	else:
-		print(nodes.keys())
 
 	successor_id = find_successor(node_id, nodes)
 
@@ -179,18 +180,24 @@ def search_image_from_user():
 		log(image_name, get_hash_value(test_image_encoding))
 
 		hash_value = get_hash_value(test_image_encoding)
-		successor_node_id = find_successor(hash_value, nodes)
+		count = 0
 
-		message = {
-			'encoding':test_image_encoding
-		}
+		while count < SENSITIVITY:
+			successor_node_id = find_successor(hash_value, nodes)
 
-		url = nodes[successor_node_id] + URLS['search_image']
-		response = send_as_json(url, message)
-		if response['name'] == '':
-			print('No Image found')
-		else:
-			print('Welcome ' + response['name'])
+			message = {
+				'encoding':test_image_encoding,
+				'count': count
+			}
+
+			url = nodes[successor_node_id] + URLS['search_image']
+			response = send_as_json(url, message)
+			if response['name'] == '':
+				hash_value = successor_node_id
+				count += 1
+			else:
+				print('Welcome ' + response['name'])
+				break
 
 	else:
 		print('No such image found')

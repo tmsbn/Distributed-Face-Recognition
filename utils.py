@@ -22,7 +22,7 @@ def log(*messages):
 	if LOG:
 		for message in messages:
 			print(message, end=' ')
-			print()
+		print()
 
 
 def is_in_range(start, end, curr):
