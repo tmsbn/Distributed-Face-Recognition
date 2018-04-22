@@ -80,15 +80,16 @@ for train_image_file in train_image_files:
 
 THRESHOLD = 0.5
 
+
 def get_image_name_from_path(image_path):
     output_image_name = image_path.split("/")[-1]
     person_name = output_image_name.split(".")[0]
     return person_name
 
+
 def detect_person(rgb_frame):
     
     model_files = glob.glob(join(models_dir, "*.pkl"))
-    
     train_image_encodings = []
     for model_file in model_files:
         with open(model_file, 'rb') as input_file:

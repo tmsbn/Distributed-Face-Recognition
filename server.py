@@ -15,6 +15,7 @@ import pickle
 import traceback
 import threading
 from collections import defaultdict
+from PIL import Image
 
 HOST_NAME = socket.gethostbyname(socket.gethostname())
 
@@ -48,6 +49,7 @@ def train_models_in_system():
     log('Loading images from server')
 
     for train_image_file in train_image_files:
+
         train_image = face_recognition.load_image_file(train_image_file)
         train_image_encoding = face_recognition.face_encodings(train_image)
         train_image_name = train_image_file.split("/")[-1].split(".")[0]

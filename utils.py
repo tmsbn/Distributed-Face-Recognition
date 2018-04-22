@@ -18,9 +18,11 @@ def send_as_bytes(url, message):
 
 
 # Log messages
-def log(message):
+def log(*messages):
 	if LOG:
-		print(message)
+		for message in messages:
+			print(message, end=' ')
+			print()
 
 
 def is_in_range(start, end, curr):

@@ -8,7 +8,7 @@ import time
 import cv2
 import face_recognition
 import numpy as np
-from os.path import join
+from os.path import join, exists
 import glob
 import pickle
 
@@ -21,7 +21,8 @@ URLS = {
 	'models': '/models',
 	'model': '/model',
 	'test': '/test',
-	'successor_encodings': '/successor_encodings'
+	'successor_encodings': '/successor_encodings',
+	'search_image' : '/search_image'
 }
 
 node_id = -1
@@ -53,6 +54,28 @@ def register():
 		log('Assigned node ID:' + str(node_id))
 		show_camera()
 		get_encodings_from_successor()
+
+
+# Search Images
+@app.route('/search_image', methods=['POST'])
+def search_image():
+
+	global nodes, face_encodings
+	response = request.get_json(force=True)
+	unknown_face_encoding = np.asarray(response['encoding'])
+
+	message = {
+		'name': ''
+	}
+
+	log('Comparing face distances')
+	# See how far apart the test image is from the known faces
+	for name, face_encoding in face_encodings.items():
+		face_distances = face_recognition.face_distance([face_encoding], unknown_face_encoding)
+		log('face distance', face_distances)
+		if face_distances[0] <= 0.5:
+			message['name'] = name
+	return json.dumps(message)
 
 
 # Update face encodings
@@ -143,6 +166,36 @@ def update_nodes():
 	return json.dumps(message)
 
 
+# Search for image , this function will be modified to fit in a camera
+def search_image_from_user():
+
+	image_name = input('Enter image name to search:')
+	image_name = image_name + '.jpg'
+	image_path = join("images", 'test', image_name)
+	if exists(image_path):
+		test_image = face_recognition.load_image_file(image_path)
+		test_image_encoding = face_recognition.face_encodings(test_image)[0].tolist()
+
+		log(image_name, get_hash_value(test_image_encoding))
+
+		hash_value = get_hash_value(test_image_encoding)
+		successor_node_id = find_successor(hash_value, nodes)
+
+		message = {
+			'encoding':test_image_encoding
+		}
+
+		url = nodes[successor_node_id] + URLS['search_image']
+		response = send_as_json(url, message)
+		if response['name'] == '':
+			print('No Image found')
+		else:
+			print('Welcome ' + response['name'])
+
+	else:
+		print('No such image found')
+
+
 def start_server():
 	threading.Thread(target=app.run, args=(HOST_NAME, PORT)).start()
 	time.sleep(0.5)
@@ -152,6 +205,7 @@ def start_server():
 def main():
 	start_server()
 	register()
+	search_image_from_user()
 
 
 if __name__ == '__main__':
