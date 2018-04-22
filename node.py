@@ -227,8 +227,9 @@ def test_encoding():
 	log('Requested for encoding search...')
 	request_json = request.get_json(force=True)
 	encoding = request_json['encoding']
-	log('Client encoding', encoding)
+
 	search_result = search_encoding_in_nodes(np.asarray(encoding))
+	log('Search result is', search_result)
 	message = {
 		'result': search_result
 	}
