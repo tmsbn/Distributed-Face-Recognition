@@ -2,17 +2,17 @@ import cv2
 import face_recognition
 from utils import send_as_json
 
-URL = 'http://localhost:5001/test_encoding'
+URL = 'http://127.0.0.1:5001/test_encoding'
 
 
 def detect_person(rgb_frame):
-	print('sub')
+
 	face_locations = face_recognition.face_locations(rgb_frame)
 	face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
 	message = {
 		'encoding': face_encodings[0].tolist()
 	}
-
+	print(face_encodings[0].tolist())
 	response = send_as_json(URL, message)
 
 	print(response['result'])
@@ -29,7 +29,7 @@ def main():
 	cv2.namedWindow("preview")
 	vc = cv2.VideoCapture(0)
 	rgb_frame = get_frame_from_camera(vc)
-	print(detect_person(rgb_frame))
+	detect_person(rgb_frame)
 
 
 if __name__ == '__main__':

@@ -71,18 +71,22 @@ def search_image():
 	unknown_face_encoding = np.asarray(response['encoding'])
 
 	message = {
-		'name': ''
+		'name': search_encodings(unknown_face_encoding)
 	}
 
+	return json.dumps(message)
+
+
+def search_encodings(unknown_face_encoding):
+
 	log('Comparing face distances')
-	# See how far apart the test image is from the known faces
 	for name, face_encoding in face_encodings.items():
 		face_distances = face_recognition.face_distance([face_encoding], unknown_face_encoding)
 		log('face distance', face_distances, name)
 		if face_distances[0] <= 0.5:
-			message['name'] = name
+			return name
 
-	return json.dumps(message)
+	return ''
 
 
 # Update face encodings
@@ -169,21 +173,27 @@ def update_nodes():
 
 
 # Search encoding in node
-def search_encoding_in_node(test_image_encoding):
+def search_encoding_in_nodes(test_image_encoding):
 
 	hash_value = get_hash_value(test_image_encoding, 5)  # Add threshold
+	log(hash_value)
 	count = 0
 
 	while count < SENSITIVITY:
+		log('some loop issue')
 		successor_node_id = find_successor(hash_value, nodes)
 
+		if successor_node_id == node_id:  # If its the same node, search the node and return the value
+			return 'Welcome ' + search_encodings(test_image_encoding)
+
 		message = {
-			'encoding': test_image_encoding,
+			'encoding': test_image_encoding.tolist(),
 			'count': count
 		}
 
 		url = nodes[successor_node_id] + URLS['search_image']
 		response = send_as_json(url, message)
+		log('Stuck here')
 		if response['name'] == '':
 			hash_value = successor_node_id
 			count += 1
@@ -202,9 +212,9 @@ def search_image_from_user():
 	if exists(image_path):
 		test_image = face_recognition.load_image_file(image_path)
 		# test_image = resizeimage.resize_cover(test_image, [IMAGE_WIDTH, IMAGE_HEIGHT])
-		test_image_encoding = face_recognition.face_encodings(test_image)[0].tolist()
+		test_image_encoding = face_recognition.face_encodings(test_image)[0]
 
-		result = search_encoding_in_node(test_image_encoding)
+		result = search_encoding_in_nodes(test_image_encoding)
 		print(result)
 
 	else:
@@ -212,15 +222,17 @@ def search_image_from_user():
 
 
 @app.route('/test_encoding', methods=['POST'])
-def check_encoding():
+def test_encoding():
 
+	log('Requested for encoding search...')
 	request_json = request.get_json(force=True)
 	encoding = request_json['encoding']
-	search_result = search_encoding_in_node(encoding)
+	log('Client encoding', encoding)
+	search_result = search_encoding_in_nodes(np.asarray(encoding))
 	message = {
 		'result': search_result
 	}
-	return json.dump(message)
+	return json.dumps(message)
 
 
 @app.route('/')
