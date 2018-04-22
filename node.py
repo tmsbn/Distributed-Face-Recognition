@@ -106,19 +106,17 @@ def successor_encodings():
 	predecessor_node_id = int(response['node_id'])
 	encodings_to_transfer = {}
 
-	log('Transferring encodings to {}'.format(predecessor_node_id))
+	log('Transferring encodings from {} to {}'.format(node_id, predecessor_node_id))
 	for name, face_encoding in face_encodings.items():
 		hash_value = get_hash_value(np.asarray(face_encoding))
-		log(hash_value)
-		# 4 5 8 [10] , [7]
+
 		if is_in_range(node_id, predecessor_node_id, hash_value):
 			encodings_to_transfer[name] = face_encoding
+			log(name + ':' + str(get_hash_value(np.asarray(face_encoding))))
 
 	message = {
 		'encodings': encodings_to_transfer
 	}
-
-	log('Encodings of length {} being transferred from {} to {}:'.format(len(encodings_to_transfer), node_id, predecessor_node_id))
 
 	return json.dumps(message)
 
@@ -146,9 +144,8 @@ def get_encodings_from_successor():
 	response = send_as_json(url, message)
 	face_encodings = response['encodings']
 
-	log('Encodings after updating:')
+	log('Encodings after update from {}:'.format(successor_id))
 	print_encoding_hash_values(face_encodings)
-	log("Updated encodings for:" + str(face_encodings.keys()))
 
 
 # Update the list of online nodes

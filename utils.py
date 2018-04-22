@@ -62,7 +62,7 @@ def find_successor(input_id, nodes):
 
 def print_encoding_hash_values(encodings):
 	for name, encoding in encodings.items():
-		log(get_hash_value(encoding))
+		log(name, get_hash_value(encoding))
 
 
 # Helper function since keys in  nodes_json are stored as Strings
