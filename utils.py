@@ -1,3 +1,13 @@
+'''
+Utility Functions
+
+Authors:
+Thomas Binu
+Ruzan Sasuri
+Amol Gaikwad
+'''
+
+
 import numpy as np
 import requests
 import json
@@ -5,6 +15,7 @@ import json
 LOG = True
 
 
+# Convert message to JSON and send to URL using request object
 def send_as_json(url, message):
 	response = requests.post(url, data=json.dumps(message))
 	log(response)
@@ -25,6 +36,7 @@ def log(*messages):
 		print()
 
 
+# check if curr is in range between start and end in a circular loop
 def is_in_range(start, end, curr):
 	# (start < end and start <= curr <= end) or (curr >= start or curr <= end)
 	if start < end:
@@ -38,7 +50,7 @@ def print_online_nodes(nodes):
 		log(str(curr_id) + '\t' + url)
 
 
-# Calculate hash of the face encoding
+# Calculate hash of the face encoding including a threshold
 def get_hash_value(face_encoding, threshold=0):
 	val = np.linalg.norm(face_encoding)
 	# print('Original value', val)

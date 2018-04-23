@@ -1,3 +1,12 @@
+'''
+Node Module of the Chord System used to store facial encodings
+
+Authors:
+Thomas Binu
+Ruzan Sasuri
+Amol Gaikwad
+'''
+
 import json
 import socket
 import requests
@@ -110,9 +119,12 @@ def update_encodings():
 @app.route('/successor_encodings', methods=['POST'])
 def successor_encodings():
 
+	global face_encodings
+
 	response = request.get_json(force=True)
 	predecessor_node_id = int(response['node_id'])
 	encodings_to_transfer = {}
+	delete_keys = []
 
 	log('Transferring encodings from {} to {}'.format(node_id, predecessor_node_id))
 	for name, face_encoding in face_encodings.items():
@@ -120,11 +132,19 @@ def successor_encodings():
 
 		if is_in_range(node_id, predecessor_node_id, hash_value):
 			encodings_to_transfer[name] = face_encoding
+			delete_keys.append(name)
 			log(name + ':' + str(get_hash_value(np.asarray(face_encoding))))
+
+	for key in delete_keys:
+		del face_encodings[key]
 
 	message = {
 		'encodings': encodings_to_transfer
 	}
+
+	log('Encodings in node')
+	for name, face_encoding in face_encodings.items():
+		log(name, str(get_hash_value(np.asarray(face_encoding))))
 
 	return json.dumps(message)
 

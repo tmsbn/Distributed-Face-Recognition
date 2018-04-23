@@ -1,3 +1,12 @@
+'''
+Camera Module that connects to Docker Nodes to detect a person
+Authors:
+Thomas Binu
+Ruzan Sasuri
+Amol Gaikwad
+'''
+
+
 import cv2
 import face_recognition
 from utils import send_as_json
@@ -11,13 +20,17 @@ def detect_person(rgb_frame):
 
 	face_locations = face_recognition.face_locations(rgb_frame)
 	face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+
+	if len(face_locations) == 0 and len(face_encodings) == 0:
+		return 'No person detected'
+
 	message = {
 		'encoding': face_encodings[0].tolist()
 	}
 	# print(face_encodings[0].tolist())
 	response = send_as_json(URL, message)
 
-	print(response['result'])
+	return response['result']
 
 
 def capture_and_detect(vc):
@@ -32,7 +45,7 @@ def capture_and_detect(vc):
 			break
 
 		if cv2.waitKey(1) & 0xFF == ord('c'):
-			detect_person(rgb_frame)
+			print(detect_person(rgb_frame))
 
 	vc.release()
 	cv2.destroyAllWindows()

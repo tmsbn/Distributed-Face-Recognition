@@ -1,3 +1,12 @@
+'''
+Server Module to track online nodes
+
+Authors:
+Thomas Binu
+Ruzan Sasuri
+Amol Gaikwad
+'''
+
 import json
 import socket
 import requests
