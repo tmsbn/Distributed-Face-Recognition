@@ -1,4 +1,4 @@
-This projects implements a Distributed Face Recognition System
+This projects implements a Distributed Face Recognition System using Chord DHT and OpenFace Neural Network
 
 
 Authors:

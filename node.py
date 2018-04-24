@@ -196,6 +196,7 @@ def update_nodes():
 def search_encoding_in_nodes(test_image_encoding):
 
 	hash_value = get_hash_value(test_image_encoding, 5)  # Add threshold
+
 	log(hash_value)
 	count = 0
 

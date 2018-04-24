@@ -51,10 +51,10 @@ def print_online_nodes(nodes):
 
 
 # Calculate hash of the face encoding including a threshold
-def get_hash_value(face_encoding, threshold=0):
+def get_hash_value(face_encoding, threshold=0, mod_space=64):
 	val = np.linalg.norm(face_encoding)
 	# print('Original value', val)
-	hash_value = int(round((val - 1) * 100)) - threshold
+	hash_value = subtract_mod_space(int(round((val - 1) * 100)), threshold, mod_space)
 	return hash_value
 
 
@@ -84,3 +84,12 @@ def get_nodes_from_json_dict(nodes_json):
 		nodes[int(key)] = value
 
 	return nodes
+
+
+def subtract_mod_space(a, b, mod):
+
+	if a < b:
+		return mod + (a - b)
+	else:
+		return b - a
+# 2 5

@@ -22,7 +22,7 @@ import threading
 
 HOST_NAME = socket.gethostbyname(socket.gethostname())
 
-NODE_COUNT = 32
+NODE_COUNT = 64
 app = Flask(__name__)
 
 url_head = 'http://'
@@ -75,7 +75,7 @@ def get_new_node_id():
 	register_id = -1
 	exists = True
 	while exists:
-		register_id = random.randint(1, NODE_COUNT + 1)
+		register_id = random.randint(0, NODE_COUNT)
 		if register_id not in nodes:
 			exists = False
 
