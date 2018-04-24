@@ -82,6 +82,7 @@ def get_new_node_id():
 	return register_id
 
 
+# Update all online nodes with the node status
 def update_online_nodes():
 	message = {
 		'nodes': nodes
@@ -94,6 +95,7 @@ def update_online_nodes():
 		send_as_json(full_url, message)
 
 
+# Register the nodes in service
 @app.route('/register', methods=['POST'])
 def register():
 	try:
@@ -125,6 +127,7 @@ def test_message():
 	return json.dump(message)
 
 
+# Start the flask service
 def start_server():
 	threading.Thread(target=app.run, args=(HOST_NAME, PORT)).start()
 	time.sleep(0.5)

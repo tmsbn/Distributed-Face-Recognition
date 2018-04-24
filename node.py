@@ -261,6 +261,7 @@ def hello_world():
 	return 'Dockerized'
 
 
+# Start the flask service
 def start_server():
 	threading.Thread(target=app.run, args=(HOST_NAME, PORT)).start()
 	time.sleep(0.5)
