@@ -15,6 +15,13 @@ import json
 LOG = True
 
 
+# Get response from URL as JSON
+def get_as_json(url):
+	response = requests.get(url)
+	log(response)
+	return json.loads(response.text)
+
+
 # Convert message to JSON and send to URL using request object
 def send_as_json(url, message):
 	response = requests.post(url, data=json.dumps(message))
@@ -37,12 +44,24 @@ def log(*messages):
 
 
 # check if curr is in range between start and end in a circular loop
-def is_in_range(start, end, curr):
+def is_in_range(start, end, curr, exclude_left=False, exclude_right=False):
 	# (start < end and start <= curr <= end) or (curr >= start or curr <= end)
 	if start < end:
-		return start <= curr <= end
+
+		if exclude_left:
+			return start < curr <= end
+		elif exclude_right:
+			return start < curr < end
+		else:
+			return start <= curr <= end
 	else:
-		return curr >= start or curr <= end
+
+		if exclude_left:
+			return curr > start or curr <= end
+		elif exclude_right:
+			return curr >= start or curr < end
+		else:
+			return curr >= start or curr <= end
 
 
 def print_online_nodes(nodes):
@@ -86,10 +105,10 @@ def get_nodes_from_json_dict(nodes_json):
 	return nodes
 
 
+# a - b in mod space
 def subtract_mod_space(a, b, mod):
 
 	if a < b:
-		return mod + (a - b)
+		return (mod + (a - b)) % mod
 	else:
-		return b - a
-# 2 5
+		return (a - b) % mod

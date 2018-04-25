@@ -21,11 +21,13 @@ from os.path import join, exists
 import glob
 import pickle
 from resizeimage import resizeimage
+import logging
 
 SERVER_URL = 'http://172.17.0.2:5000'
 
 HOST_NAME = socket.gethostbyname(socket.gethostname())
 PORT = 5000
+
 URLS = {
 	'register': '/register',
 	'models': '/models',
@@ -93,6 +95,7 @@ def search_encodings(unknown_face_encoding):
 		face_distances = face_recognition.face_distance([face_encoding], unknown_face_encoding)
 		log('face distance', face_distances, name)
 		if face_distances[0] <= 0.5:
+			log('Matched to', name)
 			return name
 
 	return ''
@@ -142,7 +145,7 @@ def successor_encodings():
 		'encodings': encodings_to_transfer
 	}
 
-	log('Encodings in node')
+	log('\nEncodings in node:-')
 	for name, face_encoding in face_encodings.items():
 		log(name, str(get_hash_value(np.asarray(face_encoding))))
 
@@ -197,15 +200,21 @@ def search_encoding_in_nodes(test_image_encoding):
 
 	hash_value = get_hash_value(test_image_encoding, 5)  # Add threshold
 
-	log(hash_value)
+	log('image has hash value', hash_value)
 	count = 0
-
+	log('Starting image search through nodes')
 	while count < SENSITIVITY:
-		log('some loop issue')
+
 		successor_node_id = find_successor(hash_value, nodes)
+		log('Successor of {} is {} at loop {}'.format(hash_value, successor_node_id, count + 1))
 
 		if successor_node_id == node_id:  # If its the same node, search the node and return the value
-			return 'Welcome ' + search_encodings(test_image_encoding)
+			log('\nSearching at the same node as request was made\n')
+			person_name = search_encodings(test_image_encoding)
+			if person_name != '':
+				return person_name
+			else:
+				break
 
 		message = {
 			'encoding': test_image_encoding.tolist(),
@@ -214,8 +223,8 @@ def search_encoding_in_nodes(test_image_encoding):
 
 		url = nodes[successor_node_id] + URLS['search_image']
 		response = send_as_json(url, message)
-		log('Stuck here')
 		if response['name'] == '':
+			log('Could not find encoding at ', successor_node_id)
 			hash_value = successor_node_id
 			count += 1
 		else:
@@ -269,9 +278,20 @@ def start_server():
 
 
 def main():
-	start_server()
-	register()
-	search_image_from_user()
+
+	try:
+		start_server()
+	except Exception as e:
+		logging.exception('Could not start flask server')
+		return
+
+	try:
+		register()
+	except Exception:
+		logging.exception('Could not connect to registration server')
+		return
+
+	# search_image_from_user()
 
 
 if __name__ == '__main__':

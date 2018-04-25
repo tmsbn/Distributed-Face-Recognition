@@ -120,11 +120,22 @@ def register():
 	return json.dumps(message)
 
 
+# Get online nodes
+@app.route('/online_nodes', methods=['GET'])
+def online_nodes():
+
+	message = {
+		'nodes': nodes
+	}
+
+	return json.dumps(message)
+
+
 @app.route('/test', methods=['POST'])
 def test_message():
 	response = request.get_json(force=True)
 	message = response['message']
-	return json.dump(message)
+	return json.dumps(message)
 
 
 # Start the flask service
@@ -135,8 +146,12 @@ def start_server():
 
 def main():
 	train_models_in_system()
-	start_server()
 
+	try:
+		start_server()
+	except Exception:
+		print('Could not start flask server')
+		return
 
 if __name__ == '__main__':
 	main()
